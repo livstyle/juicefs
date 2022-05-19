@@ -36,6 +36,7 @@ runs:
 
     - name: Test
       run: |
+        set -x
         meta_url=${{inputs.meta_url}}
         file_size=${{inputs.file_size}}
         file_count=${{inputs.file_count}}
@@ -53,7 +54,7 @@ runs:
         export MINIO_ROOT_PASSWORD=minioadmin
         ./juicefs format $meta_url $volume
         ./juicefs gateway $meta_url localhost:9000 &
-
+        
         dd if=/dev/urandom of=file iflag=fullblock,count_bytes bs=4k count='$file_size' > /dev/null
         mkdir data
         for i in {1..$file_count}; do
@@ -69,7 +70,7 @@ runs:
         ./juicefs mount -d $meta_url $mp
         count=$(md5deep -lrX sum.md5 || wc -l)
         [ $count = 0 ] && echo "check md5 succeed" || echo "check md5 failed"
-
+        set +x
       shell: bash
     
     - name: Setup upterm session

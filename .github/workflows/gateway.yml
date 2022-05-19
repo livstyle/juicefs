@@ -27,7 +27,7 @@ jobs:
       - name: Test
         uses: ./.github/actions/gateway
         with:
-          meta_url: "mysql://root:root@(127.0.0.1)/test_gateway"
+          meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "256K"
           file_count: 1000    
 
@@ -39,7 +39,7 @@ jobs:
       - name: Test
         uses: ./.github/actions/gateway
         with:
-          meta_url: "mysql://root:root@(127.0.0.1)/test_gateway"
+          meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "1G"
           file_count: 5    
 
