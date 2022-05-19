@@ -42,7 +42,6 @@ runs:
 
     - name: Test
       run: |
-        set -x
         meta_url=${{inputs.meta_url}}
         file_size=${{inputs.file_size}}
         file_count=${{inputs.file_count}}
@@ -77,7 +76,6 @@ runs:
 
         ./juicefs mount -d $meta_url $mp
         diff -ur data/ $mp/data/
-        set +x
       shell: bash
     
     - name: Setup upterm session
