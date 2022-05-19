@@ -29,8 +29,11 @@ jobs:
         with:
           meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "8K"
-          file_count: 50000
+          file_count: 10000
           threads: 100    
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
 
   upload-big-files-with-mysql:
     runs-on: ubuntu-latest          
@@ -44,6 +47,9 @@ jobs:
           file_size: "1G"
           file_count: 5
           threads: 100    
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
 
   upload-small-files-with-sqlite:
     runs-on: ubuntu-latest
@@ -56,6 +62,9 @@ jobs:
           meta_url: "sqlite3://test.db"
           file_size: "8K"
           file_count: 10000    
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
 
   upload-big-files-with-sqlite:
     runs-on: ubuntu-latest
@@ -68,6 +77,9 @@ jobs:
           meta_url: "sqlite3://test.db"
           file_size: "1G"
           file_count: 10    
+    - name: Setup upterm session
+      if: ${{ failure() }}
+      uses: lhotari/action-upterm@v1    
 
   upload-small-files-with-pg:
     runs-on: ubuntu-latest
@@ -92,6 +104,9 @@ jobs:
           meta_url: "postgres://postgres:postgres@127.0.0.1:5432/sync_test?sslmode=disable"
           file_size: "8K"
           file_count: 10000    
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
 
   upload-big-files-with-pg:
     runs-on: ubuntu-latest
@@ -115,7 +130,10 @@ jobs:
         with:
           meta_url: "postgres://postgres:postgres@127.0.0.1:5432/sync_test?sslmode=disable"
           file_size: "1G"
-          file_count: 10    
+          file_count: 10
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
 
   sync-to-gateway-with-multithread:
     runs-on: ubuntu-latest

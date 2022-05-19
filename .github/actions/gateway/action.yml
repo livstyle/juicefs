@@ -48,7 +48,7 @@ runs:
         echo meta_url is: $meta_url, file_size is $file_size, file_count is $file_count
         db_name=$(basename $meta_url | awk -F? '{print $1}')
         if [[ "$meta_url" == mysql* ]]; then
-          mysql -uroot -proot -e "set global transaction isolation level read uncommitted;" 
+          mysql -uroot -proot -e "set global transaction isolation level serializable;" 
           mysql -uroot -proot -e "show variables like '%isolation%;'" 
           mysql -uroot -proot -e "drop database if exists $db_name; create database $db_name;" 
         elif [[ "$meta_url" == postgres* ]]; then
@@ -74,13 +74,8 @@ runs:
         #./mc cp --recursive data/  minio/$volume/data
         end=`date +%s`
         time=$((end-start))
-        echo time cost is: $time
+        echo time cost is: $time second
         ./juicefs mount -d $meta_url $mp
-        diff -ur data/ $mp/data/
+        diff -ur data/ $mp/data/ && echo "diff succeed"
 
-        exit 1
       shell: bash
-    
-    - name: Setup upterm session
-      if: ${{ failure() }}
-      uses: lhotari/action-upterm@v1
