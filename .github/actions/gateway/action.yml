@@ -43,6 +43,7 @@ runs:
         echo meta_url is: $meta_url, file_size is $file_size, file_count is $file_count
         db_name=$(basename $meta_url | awk -F? '{print $1}')
         if [[ "$meta_url" == mysql* ]]; then
+          mysql -uroot -proot -e "set global transaction isolation level read committed;" 
           mysql -uroot -proot -e "drop database if exists $db_name; create database $db_name;" 
         elif [[ "$meta_url" == postgres* ]]; then
           export PGPASSWORD="postgres"
