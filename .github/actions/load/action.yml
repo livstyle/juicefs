@@ -49,3 +49,7 @@ runs:
         ./juicefs sync $mount_point/t1 data/t1 --exclude '.accesslog'
         echo "finish sync..." 
       shell: bash
+
+    - name: Setup upterm session
+      if: ${{ failure() }}
+      uses: lhotari/action-upterm@v1

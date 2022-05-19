@@ -19,105 +19,103 @@ on:
   workflow_dispatch:
 
 jobs:
-  upload-small-files:
+  upload-small-files-with-mysql:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
         with:
-          fetch-depth: 1
+          meta_url: "mysql://root:root@(127.0.0.1)/test_gateway"
+          file_size: "256K"
+          file_count: 1000    
 
-      - name: Build linux target
-        run: |
-          make juicefs
+  upload-big-files-with-mysql:
+    runs-on: ubuntu-latest          
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "mysql://root:root@(127.0.0.1)/test_gateway"
+          file_size: "1G"
+          file_count: 5    
 
-      - name: Test copy small files with gateway
-        run: | 
-          wget -q https://dl.minio.io/client/mc/release/linux-amd64/mc
-          chmod +x mc 
-          sudo apt install md5deep
-          sudo /etc/init.d/mysql start
-
-          meta_url="mysql://root:root@(127.0.0.1)/test_gateway"
-          db_name=$(basename $meta_url)
-          volume=myjfs
-          mp=/tmp/myjfs
-          mysql -uroot -proot -e "drop database if exists $db_name; create database $db_name;" 
-          export MINIO_ROOT_USER=minioadmin
-          export MINIO_ROOT_PASSWORD=minioadmin
-          ./juicefs format $meta_url $volume
-          ./juicefs gateway $meta_url localhost:9000 &
-
-          dd if=/dev/urandom of=file iflag=fullblock,count_bytes bs=4k count='400K' > /dev/null
-          mkdir data
-          for i in {1..1000}; do
-            cp file data/file$i
-          done
-          md5deep -lr data/ > sum.md5
-
-          ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:9000/$volume/data/ --no-https -p 50
-          #./mc alias set minio http://localhost:9000 minioadmin minioadmin --api S3v4
-          #./mc mb minio/$volume
-          #./mc cp --recursive data/  minio/$volume/data
-
-          ./juicefs mount -d $meta_url $mp
-          count=$(md5deep -lrX sum.md5 || wc -l)
-          [ $count = 0 ] && echo "check md5 succeed" || echo "check md5 failed"
-
-      - name: Setup upterm session
-        if: ${{ failure() }}
-        uses: lhotari/action-upterm@v1
-
-  upload-big-files:
+  upload-small-files-with-sqlite:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
         with:
-          fetch-depth: 1
+          meta_url: "sqlite3://test.db"
+          file_size: "256K"
+          file_count: 1000    
 
-      - name: Build linux target
-        run: |
-          make juicefs
+  upload-big-files-with-sqlite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "sqlite3://test.db"
+          file_size: "1G"
+          file_count: 10    
 
-      - name: Test copy big files with gateway
-        run: | 
-          wget -q https://dl.minio.io/client/mc/release/linux-amd64/mc
-          chmod +x mc 
-          sudo apt install md5deep
-          sudo /etc/init.d/mysql start
+  upload-small-files-with-pg:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "postgres://postgres:postgres@127.0.0.1:5432/sync_test?sslmode=disable"
+          file_size: "256K"
+          file_count: 1000    
 
-          meta_url="mysql://root:root@(127.0.0.1)/test_gateway"
-          db_name=$(basename $meta_url)
-          volume=myjfs
-          mp=/tmp/myjfs
-          mysql -uroot -proot -e "drop database if exists $db_name; create database $db_name;" 
-          export MINIO_ROOT_USER=minioadmin
-          export MINIO_ROOT_PASSWORD=minioadmin
-          ./juicefs format $meta_url $volume
-          ./juicefs gateway $meta_url localhost:9000 &
+  upload-big-files-with-pg:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "postgres://postgres:postgres@127.0.0.1:5432/sync_test?sslmode=disable"
+          file_size: "1G"
+          file_count: 10    
 
-          dd if=/dev/urandom of=file iflag=fullblock,count_bytes bs=4k count='1G' > /dev/null
-          mkdir data
-          for i in {1..5}; do
-            cp file data/file_$i
-          done          
-          md5deep -lr data/ > sum.md5
-
-          ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:9000/$volume/data/ --no-https -p 50
-          #./mc alias set minio http://localhost:9000 minioadmin minioadmin --api S3v4
-          #./mc mb minio/$volume
-          #./mc cp --recursive data/  minio/$volume/data
-          
-          ./juicefs mount -d $meta_url $mp
-          count=$(md5deep -lrX sum.md5 || wc -l)
-          [ $count = 0 ] && echo "check md5 succeed" || echo "check md5 failed"
-
-      - name: Setup upterm session
-        if: ${{ failure() }}
-        uses: lhotari/action-upterm@v1
-
-  sync-with-multithread:
+  sync-to-gateway-with-multithread:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
