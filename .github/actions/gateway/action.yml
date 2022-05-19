@@ -76,6 +76,8 @@ runs:
 
         ./juicefs mount -d $meta_url $mp
         diff -ur data/ $mp/data/
+        
+        exit 1
       shell: bash
     
     - name: Setup upterm session
