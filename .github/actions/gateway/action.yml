@@ -13,6 +13,10 @@ inputs:
     description: 'size of each file in human read format, eg 1K, 1M, 1G.'
     required: true
     default: '4K'
+  threads:
+    description: 'thread number for juicefs sync to gateway'
+    required: true
+    default: 50
   
 runs:
   using: "composite"
@@ -38,10 +42,12 @@ runs:
 
     - name: Test
       run: |
+
         set -x
         meta_url=${{inputs.meta_url}}
         file_size=${{inputs.file_size}}
         file_count=${{inputs.file_count}}
+        threads=${{inputs.threads}}
         echo meta_url is: $meta_url, file_size is $file_size, file_count is $file_count
         db_name=$(basename $meta_url | awk -F? '{print $1}')
         if [[ "$meta_url" == mysql* ]]; then
@@ -66,14 +72,14 @@ runs:
         done
         md5deep -lr data/ > sum.md5
 
-        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:9000/$volume/data/ --no-https -p 50
+        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:9000/$volume/data/ --no-https -p $threads
         #./mc alias set minio http://localhost:9000 minioadmin minioadmin --api S3v4
         #./mc mb minio/$volume
         #./mc cp --recursive data/  minio/$volume/data
 
         ./juicefs mount -d $meta_url $mp
         count=$(md5deep -lrX sum.md5 || wc -l)
-        [ $count = 0 ] && echo "check md5 succeed" || echo "check md5 failed"
+        [ $count = 0 ] && echo "check md5 succeed" || echo "check md5 failed"; exit 1
         set +x
       shell: bash
     

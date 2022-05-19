@@ -28,8 +28,9 @@ jobs:
         uses: ./.github/actions/gateway
         with:
           meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
-          file_size: "256K"
-          file_count: 1000    
+          file_size: "8K"
+          file_count: 100000
+          threads: 100    
 
   upload-big-files-with-mysql:
     runs-on: ubuntu-latest          
@@ -41,7 +42,8 @@ jobs:
         with:
           meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "1G"
-          file_count: 5    
+          file_count: 5
+          threads: 100    
 
   upload-small-files-with-sqlite:
     runs-on: ubuntu-latest
@@ -52,8 +54,8 @@ jobs:
         uses: ./.github/actions/gateway
         with:
           meta_url: "sqlite3://test.db"
-          file_size: "256K"
-          file_count: 1000    
+          file_size: "8K"
+          file_count: 100000    
 
   upload-big-files-with-sqlite:
     runs-on: ubuntu-latest
@@ -88,8 +90,8 @@ jobs:
         uses: ./.github/actions/gateway
         with:
           meta_url: "postgres://postgres:postgres@127.0.0.1:5432/sync_test?sslmode=disable"
-          file_size: "256K"
-          file_count: 1000    
+          file_size: "8K"
+          file_count: 100000    
 
   upload-big-files-with-pg:
     runs-on: ubuntu-latest
