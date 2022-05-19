@@ -55,7 +55,7 @@ runs:
         ./juicefs format $meta_url $volume
         ./juicefs gateway $meta_url localhost:9000 &
         
-        dd if=/dev/urandom of=file iflag=fullblock,count_bytes bs=4k count='$file_size' > /dev/null
+        dd if=/dev/urandom of=file iflag=fullblock,count_bytes bs=4k count="$file_size" > /dev/null
         mkdir data
         for i in {1..$file_count}; do
           cp file data/file$i
