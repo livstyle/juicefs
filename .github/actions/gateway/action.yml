@@ -17,6 +17,10 @@ inputs:
     description: 'thread number for juicefs sync to gateway'
     required: true
     default: 50
+  isolation_level:
+    description: 'isolation level for mysql'
+    required: true
+    default: "repeatable read"
   
 runs:
   using: "composite"
@@ -49,7 +53,7 @@ runs:
         db_name=$(basename $meta_url | awk -F? '{print $1}')
         if [[ "$meta_url" == mysql* ]]; then
           # read uncommitted, read committed, repeatable read, serializable
-          mysql -uroot -proot -e "set global transaction isolation level read uncommitted;" 
+          mysql -uroot -proot -e "set global transaction isolation level $isolation_level;" 
           mysql -uroot -proot -e "show variables like '%isolation%;'" 
           mysql -uroot -proot -e "drop database if exists $db_name; create database $db_name;" 
         elif [[ "$meta_url" == postgres* ]]; then

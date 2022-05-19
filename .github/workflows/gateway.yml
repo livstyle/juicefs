@@ -19,7 +19,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  upload-small-files-with-mysql:
+  upload-small-files-with-mysql-read-uncommitted:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
+          file_size: "8K"
+          file_count: 10000
+          threads: 100
+          isolation_level: "read uncommitted"    
+      - name: Setup upterm session
+        if: ${{ always() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-small-files-with-mysql-read-committed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
+          file_size: "8K"
+          file_count: 10000
+          threads: 100
+          isolation_level: "read committed"    
+      - name: Setup upterm session
+        if: ${{ always() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-small-files-with-mysql-repeatable-read:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,8 +65,26 @@ jobs:
           file_size: "8K"
           file_count: 10000
           threads: 100    
+          isolation_level: "repeatable read"   
       - name: Setup upterm session
-        if: ${{ failure() }}
+        if: ${{ always() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-small-files-with-mysql-serializable:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
+          file_size: "8K"
+          file_count: 10000
+          threads: 100
+          isolation_level: "serializable"     
+      - name: Setup upterm session
+        if: ${{ always() }}
         uses: lhotari/action-upterm@v1    
 
   upload-big-files-with-mysql:
