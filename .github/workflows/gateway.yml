@@ -152,6 +152,7 @@ jobs:
           ./juicefs sync --dirs ./  s3://minioadmin:minioadmin@localhost:9000/$volume/source_dir/ --no-https -p 50
           ./juicefs mount -d $meta_url $mp
           rm -rf $mp/source_dir
+          exit 1
 
       - name: Setup upterm session
         if: ${{ failure() }}
