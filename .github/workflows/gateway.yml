@@ -127,9 +127,9 @@ jobs:
 
       - name: Build linux target
         run: |
-          #make juicefs
-          wget -q https://github.com/juicedata/juicefs/releases/download/v1.0.0-beta3/juicefs-1.0.0-beta3-linux-amd64.tar.gz
-          tar -xzf juicefs-1.0.0-beta3-linux-amd64.tar.gz
+          make juicefs
+          #wget -q https://github.com/juicedata/juicefs/releases/download/v1.0.0-beta3/juicefs-1.0.0-beta3-linux-amd64.tar.gz
+          #tar -xzf juicefs-1.0.0-beta3-linux-amd64.tar.gz
 
       - name: Test sync to gateway with multithread
         run: | 
@@ -143,13 +143,13 @@ jobs:
           volume=myjfs
           mp=/tmp/myjfs
           db_name=$(basename $meta_url)
-          mysql -uroot -proot -e "set global transaction isolation level read committed;" 
+          mysql -uroot -proot -e "set global transaction isolation level read uncommitted;" 
           mysql -uroot -proot -e "drop database if exists $db_name; create database $db_name;" 
           export MINIO_ROOT_USER=minioadmin
           export MINIO_ROOT_PASSWORD=minioadmin
           ./juicefs format $meta_url $volume
           ./juicefs gateway $meta_url localhost:9000 &
-          ./juicefs sync --dirs ./  s3://minioadmin:minioadmin@localhost:9000/$volume/source_dir/ --no-https -p 20
+          ./juicefs sync --dirs ./  s3://minioadmin:minioadmin@localhost:9000/$volume/source_dir/ --no-https -p 50
           ./juicefs mount -d $meta_url $mp
           rm -rf $mp/source_dir
 
