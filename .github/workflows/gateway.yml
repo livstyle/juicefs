@@ -143,13 +143,17 @@ jobs:
           volume=myjfs
           mp=/tmp/myjfs
           db_name=$(basename $meta_url)
-          mysql -uroot -proot -e "set global transaction isolation level read uncommitted;" 
+          mysql -uroot -proot -e "set global transaction isolation level repeatable read;" 
           mysql -uroot -proot -e "drop database if exists $db_name; create database $db_name;" 
           export MINIO_ROOT_USER=minioadmin
           export MINIO_ROOT_PASSWORD=minioadmin
           ./juicefs format $meta_url $volume
           ./juicefs gateway $meta_url localhost:9000 &
+          start=`date +%s`
           ./juicefs sync --dirs ./  s3://minioadmin:minioadmin@localhost:9000/$volume/source_dir/ --no-https -p 50
+          end=`date +%s`
+          time=$((end-start))
+          echo time is: $time
           ./juicefs mount -d $meta_url $mp
           rm -rf $mp/source_dir
           exit 1
