@@ -49,7 +49,8 @@ runs:
         file_size=${{inputs.file_size}}
         file_count=${{inputs.file_count}}
         threads=${{inputs.threads}}
-        echo meta_url is: $meta_url, file_size is $file_size, file_count is $file_count
+        isolation_level=${{inputs.isolation_level}}
+        echo meta_url is: $meta_url, file_size is $file_size, file_count is $file_count, isolation_level is $isolation_level
         db_name=$(basename $meta_url | awk -F? '{print $1}')
         if [[ "$meta_url" == mysql* ]]; then
           # read uncommitted, read committed, repeatable read, serializable
