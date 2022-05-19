@@ -77,9 +77,9 @@ jobs:
           meta_url: "sqlite3://test.db"
           file_size: "1G"
           file_count: 10    
-    - name: Setup upterm session
-      if: ${{ failure() }}
-      uses: lhotari/action-upterm@v1    
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
 
   upload-small-files-with-pg:
     runs-on: ubuntu-latest
