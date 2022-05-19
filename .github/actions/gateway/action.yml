@@ -42,7 +42,6 @@ runs:
 
     - name: Test
       run: |
-
         set -x
         meta_url=${{inputs.meta_url}}
         file_size=${{inputs.file_size}}
@@ -67,10 +66,9 @@ runs:
         
         dd if=/dev/urandom of=file iflag=fullblock,count_bytes bs=4k count="$file_size" > /dev/null
         mkdir data
-        for i in {1..$file_count}; do
+        for i in $(seq 1 $file_count); do
           cp file data/file$i
         done
-        md5deep -lr data/ > sum.md5
 
         ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:9000/$volume/data/ --no-https -p $threads
         #./mc alias set minio http://localhost:9000 minioadmin minioadmin --api S3v4
@@ -78,8 +76,7 @@ runs:
         #./mc cp --recursive data/  minio/$volume/data
 
         ./juicefs mount -d $meta_url $mp
-        count=$(md5deep -lrX sum.md5 || wc -l)
-        [ $count = 0 ] && echo "check md5 succeed" || echo "check md5 failed"; exit 1
+        diff -ur data/ $mp/data/
         set +x
       shell: bash
     
