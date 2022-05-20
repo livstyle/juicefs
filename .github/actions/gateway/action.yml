@@ -51,6 +51,7 @@ runs:
         threads=${{inputs.threads}}
         isolation_level="${{inputs.isolation_level}}"
         echo meta_url is: $meta_url, file_size is $file_size, file_count is $file_count, isolation_level is $isolation_level
+        
         db_name=$(basename $meta_url | awk -F? '{print $1}')
         if [[ "$meta_url" == mysql* ]]; then
           # read uncommitted, read committed, repeatable read, serializable
@@ -61,12 +62,14 @@ runs:
           export PGPASSWORD="postgres"
           printf "\set AUTOCOMMIT on\ndrop database if exists $db_name; create database $db_name; " |  psql -U postgres -h localhost
         fi
+
         volume=myjfs
         mp=/tmp/myjfs
         export MINIO_ROOT_USER=minioadmin
         export MINIO_ROOT_PASSWORD=minioadmin
         ./juicefs format $meta_url $volume
         ./juicefs gateway $meta_url localhost:9000 &
+        ./juicefs gateway $meta_url localhost:9001 &
         
         dd if=/dev/urandom of=file iflag=fullblock,count_bytes bs=4k count="$file_size" > /dev/null
         mkdir data
@@ -74,7 +77,11 @@ runs:
           cp file data/file$i
         done
         start=`date +%s`
-        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:9000/$volume/data/ --no-https -p $threads
+
+        sudo cp .github/workflows/resources/load-balancer.conf /etc/nginx/conf.d/load-balancer.conf
+        sudo rm /etc/nginx/sites-enabled/default
+        sudo systemctl restart nginx
+        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:8080/$volume/data/ --no-https -p $threads
         #./mc alias set minio http://localhost:9000 minioadmin minioadmin --api S3v4
         #./mc mb minio/$volume
         #./mc cp --recursive data/  minio/$volume/data

@@ -209,7 +209,7 @@ jobs:
           sudo apt install md5deep
           sudo /etc/init.d/mysql start
 
-          meta_url="mysql://root:root@(127.0.0.1)/test_gateway"
+          meta_url="mysql://root:root@(127.0.0.1)/test"
           volume=myjfs
           mp=/tmp/myjfs
           db_name=$(basename $meta_url)
