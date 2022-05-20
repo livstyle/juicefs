@@ -111,7 +111,7 @@ jobs:
         if: ${{ always() }}
         uses: lhotari/action-upterm@v1    
  
-   upload-small-files-with-redis-repeatable-read:
+  upload-small-files-with-redis-repeatable-read:
     runs-on: ubuntu-latest
     services:
       redis:
