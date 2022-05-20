@@ -60,6 +60,7 @@ runs:
         elif [[ "$meta_url" == postgres* ]]; then
           export PGPASSWORD="postgres"
           printf "\set AUTOCOMMIT on\ndrop database if exists $db_name; create database $db_name; " |  psql -U postgres -h localhost
+          printf "\set AUTOCOMMIT on\nALTER DATABASE $db_name SET DEFAULT_TRANSACTION_ISOLATION TO '$isolation_level';" |  psql -U postgres -h localhost
         fi
 
         volume=myjfs
@@ -84,7 +85,7 @@ runs:
           cp file data/file$i
         done
         start=`date +%s`
-        
+
         declare -a pids        
         ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:8080/$volume/data/ --no-https -p $threads &
         pids+=($!)

@@ -285,7 +285,7 @@ jobs:
       - name: Test
         uses: ./.github/actions/gateway
         with:
-          meta_url: "postgres://postgres:postgres@127.0.0.1:5432/sync_test?sslmode=disable"
+          meta_url: "postgres://postgres:postgres@127.0.0.1:5432/test?sslmode=disable"
           file_size: "8K"
           file_count: 10000
           threads: 10    
@@ -293,7 +293,7 @@ jobs:
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1    
 
-  upload-big-files-with-pg:
+  upload-big-files-with-pg-read-uncommitted:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -313,14 +313,106 @@ jobs:
       - name: Test
         uses: ./.github/actions/gateway
         with:
-          meta_url: "postgres://postgres:postgres@127.0.0.1:5432/sync_test?sslmode=disable"
+          meta_url: "postgres://postgres:postgres@127.0.0.1:5432/test?sslmode=disable"
           file_size: "1G"
           file_count: 10
           threads: 10
+          isolation_level: "read uncommitted"
 
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1    
+
+  upload-big-files-with-pg-read-committed:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "postgres://postgres:postgres@127.0.0.1:5432/test?sslmode=disable"
+          file_size: "1G"
+          file_count: 10
+          threads: 10
+          isolation_level: "read committed"
+
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-big-files-with-pg-repeatable-read:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "postgres://postgres:postgres@127.0.0.1:5432/test?sslmode=disable"
+          file_size: "1G"
+          file_count: 10
+          threads: 10
+          isolation_level: "repeatable read"
+
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-big-files-with-pg-serializable:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "postgres://postgres:postgres@127.0.0.1:5432/test?sslmode=disable"
+          file_size: "1G"
+          file_count: 10
+          threads: 10
+          isolation_level: "serializable"
+
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
+
 
   sync-to-gateway-with-multithread:
     runs-on: ubuntu-latest
