@@ -345,7 +345,7 @@ jobs:
         with:
           meta_url: "postgres://postgres:postgres@127.0.0.1:5432/test?sslmode=disable"
           file_size: "1G"
-          file_count: 10
+          file_count: 3
           threads: 10
           isolation_level: "read committed"
 
