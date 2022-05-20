@@ -204,6 +204,21 @@ jobs:
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1    
 
+  upload-big-files-with-badgerdb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo go get github.com/dgraph-io/badger/v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "badger://badger-data"
+          file_size: "1G"
+          file_count: 1
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
+
   upload-small-files-with-badgerdb:
     runs-on: ubuntu-latest
     steps:
@@ -219,20 +234,6 @@ jobs:
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1    
 
-  upload-big-files-with-badgerdb:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: sudo go get github.com/dgraph-io/badger/v3
-      - name: Test
-        uses: ./.github/actions/gateway
-        with:
-          meta_url: "badger://badger-data"
-          file_size: "1G"
-          file_count: 10
-      - name: Setup upterm session
-        if: ${{ failure() }}
-        uses: lhotari/action-upterm@v1    
 
   upload-small-files-with-sqlite:
     runs-on: ubuntu-latest
