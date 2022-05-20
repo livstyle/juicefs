@@ -139,39 +139,8 @@ jobs:
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1    
 
-  upload-small-files-with-badgerdb-read-committed:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: sudo go get github.com/dgraph-io/badger/v3
-      - name: Test
-        uses: ./.github/actions/gateway
-        with:
-          meta_url: "badger://badger-data"
-          file_size: "8K"
-          file_count: 10000
-          isolation_level: "read committed"    
-      - name: Setup upterm session
-        if: ${{ failure() }}
-        uses: lhotari/action-upterm@v1    
 
-  upload-small-files-with-badgerdb-repeatable-read:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: sudo go get github.com/dgraph-io/badger/v3
-      - name: Test
-        uses: ./.github/actions/gateway
-        with:
-          meta_url: "badger:///tmp/badger-data"
-          file_size: "8K"
-          file_count: 10000
-          isolation_level: "repeatable read"    
-      - name: Setup upterm session
-        if: ${{ failure() }}
-        uses: lhotari/action-upterm@v1    
-
-  upload-big-files-with-mysql:
+  upload-big-files-with-mysql-read-uncommitted:
     runs-on: ubuntu-latest          
     steps:
       - uses: actions/checkout@v3
@@ -182,6 +151,85 @@ jobs:
           meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "1G"
           file_count: 5
+          isolaction: "read uncommitted"
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-big-files-with-mysql-read-committed:
+    runs-on: ubuntu-latest          
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
+          file_size: "1G"
+          file_count: 5
+          isolaction: "read committed"
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-big-files-with-mysql-repeatable-read:
+    runs-on: ubuntu-latest          
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
+          file_size: "1G"
+          file_count: 5
+          isolaction: "repeatable read"
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-big-files-with-mysql-serializable:
+    runs-on: ubuntu-latest          
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo /etc/init.d/mysql start
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
+          file_size: "1G"
+          file_count: 5
+          isolaction: "serializable"
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-small-files-with-badgerdb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo go get github.com/dgraph-io/badger/v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "badger://badger-data"
+          file_size: "8K"
+          file_count: 10000
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-big-files-with-badgerdb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo go get github.com/dgraph-io/badger/v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "badger://badger-data"
+          file_size: "1G"
+          file_count: 10
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1    
@@ -266,6 +314,7 @@ jobs:
           meta_url: "postgres://postgres:postgres@127.0.0.1:5432/sync_test?sslmode=disable"
           file_size: "1G"
           file_count: 10
+
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1    
