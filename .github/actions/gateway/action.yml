@@ -69,7 +69,7 @@ runs:
         export MINIO_ROOT_PASSWORD=minioadmin
         ./juicefs format $meta_url $volume
         ./juicefs gateway $meta_url localhost:9000 &
-        ./juicefs gateway $meta_url localhost:9001 &
+        #./juicefs gateway $meta_url localhost:9001 &
         
         dd if=/dev/urandom of=file iflag=fullblock,count_bytes bs=4k count="$file_size" > /dev/null
         mkdir data
