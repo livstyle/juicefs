@@ -163,7 +163,7 @@ jobs:
       - name: Test
         uses: ./.github/actions/gateway
         with:
-          meta_url: "badger://badger-data"
+          meta_url: "badger:///tmp/badger-data"
           file_size: "8K"
           file_count: 10000
           isolation_level: "repeatable read"    
