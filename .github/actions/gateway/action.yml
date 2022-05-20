@@ -81,7 +81,16 @@ runs:
         sudo cp .github/workflows/resources/load-balancer.conf /etc/nginx/conf.d/load-balancer.conf
         sudo rm /etc/nginx/sites-enabled/default
         sudo systemctl restart nginx
-        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:8080/$volume/data/ --no-https -p $threads
+
+        declare -a pids        
+        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:8080/$volume/data/ --no-https -p $threads &
+        pids+=($!)
+        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:8080/$volume/data/ --no-https -p $threads &
+        pids+=($!)
+        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:8080/$volume/data/ --no-https -p $threads &
+        pids+=($!)
+        wait "${pids[@]}"
+
         #./mc alias set minio http://localhost:9000 minioadmin minioadmin --api S3v4
         #./mc mb minio/$volume
         #./mc cp --recursive data/  minio/$volume/data
