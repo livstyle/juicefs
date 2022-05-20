@@ -67,8 +67,16 @@ runs:
         export MINIO_ROOT_USER=minioadmin
         export MINIO_ROOT_PASSWORD=minioadmin
         ./juicefs format $meta_url $volume
-        ./juicefs gateway $meta_url localhost:9000 &
-        #./juicefs gateway $meta_url localhost:9001 &
+
+        if [[ "$meta_url" == badger* ]]; then
+          ./juicefs gateway $meta_url localhost:8080 &
+        else
+          ./juicefs gateway $meta_url localhost:9000 &
+          ./juicefs gateway $meta_url localhost:9001 &
+          sudo cp .github/workflows/resources/load-balancer.conf /etc/nginx/conf.d/load-balancer.conf
+          sudo rm /etc/nginx/sites-enabled/default
+          sudo systemctl restart nginx
+        fi
         
         dd if=/dev/urandom of=file iflag=fullblock,count_bytes bs=4k count="$file_size" > /dev/null
         mkdir data
@@ -76,17 +84,13 @@ runs:
           cp file data/file$i
         done
         start=`date +%s`
-
-        sudo cp .github/workflows/resources/load-balancer.conf /etc/nginx/conf.d/load-balancer.conf
-        sudo rm /etc/nginx/sites-enabled/default
-        sudo systemctl restart nginx
-
+        
         declare -a pids        
-        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:9000/$volume/data/ --no-https -p $threads &
+        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:8080/$volume/data/ --no-https -p $threads &
         pids+=($!)
-        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:9000/$volume/data/ --no-https -p $threads &
+        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:8080/$volume/data/ --no-https -p $threads &
         pids+=($!)
-        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:9000/$volume/data/ --no-https -p $threads &
+        ./juicefs sync --dirs data/  s3://minioadmin:minioadmin@localhost:8080/$volume/data/ --no-https -p $threads &
         pids+=($!)
         wait "${pids[@]}"
 
@@ -97,7 +101,8 @@ runs:
         time=$((end-start))
         echo time cost is: $time second
         #stop juicefs gateway
-        killall juicefs
+        killall juicefs 
+        sleep 3
         ./juicefs mount -d $meta_url $mp
         diff -ur data/ $mp/data/ && echo "diff succeed"
 
