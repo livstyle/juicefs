@@ -139,6 +139,37 @@ jobs:
         if: ${{ always() }}
         uses: lhotari/action-upterm@v1    
 
+  upload-small-files-with-badgerdb-read-committed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo go get github.com/dgraph-io/badger/v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "badger://badger-data"
+          file_size: "8K"
+          file_count: 10000
+          isolation_level: "read committed"    
+      - name: Setup upterm session
+        if: ${{ always() }}
+        uses: lhotari/action-upterm@v1    
+
+  upload-small-files-with-badgerdb-repeatable-read:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo go get github.com/dgraph-io/badger/v3
+      - name: Test
+        uses: ./.github/actions/gateway
+        with:
+          meta_url: "badger://badger-data"
+          file_size: "8K"
+          file_count: 10000
+          isolation_level: "repeatable read"    
+      - name: Setup upterm session
+        if: ${{ always() }}
+        uses: lhotari/action-upterm@v1    
 
   upload-big-files-with-mysql:
     runs-on: ubuntu-latest          
