@@ -16,7 +16,7 @@ inputs:
   threads:
     description: 'thread number for juicefs sync to gateway'
     required: true
-    default: 50
+    default: 30
   isolation_level:
     description: 'isolation level for mysql'
     required: true

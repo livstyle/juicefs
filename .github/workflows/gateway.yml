@@ -30,7 +30,6 @@ jobs:
           meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "8K"
           file_count: 10000
-          threads: 100
           isolation_level: "read uncommitted"    
       - name: Setup upterm session
         if: ${{ always() }}
@@ -47,7 +46,6 @@ jobs:
           meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "8K"
           file_count: 10000
-          threads: 100
           isolation_level: "read committed"    
       - name: Setup upterm session
         if: ${{ always() }}
@@ -64,7 +62,6 @@ jobs:
           meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "8K"
           file_count: 10000
-          threads: 100    
           isolation_level: "repeatable read"   
       - name: Setup upterm session
         if: ${{ always() }}
@@ -81,7 +78,6 @@ jobs:
           meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "8K"
           file_count: 10000
-          threads: 100
           isolation_level: "serializable"     
       - name: Setup upterm session
         if: ${{ always() }}
@@ -98,7 +94,6 @@ jobs:
           meta_url: "mysql://root:root@\\(127.0.0.1\\)/test"
           file_size: "1G"
           file_count: 5
-          threads: 100    
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1    
