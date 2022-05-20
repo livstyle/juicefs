@@ -309,7 +309,6 @@ jobs:
           echo time is: $time
           ./juicefs mount -d $meta_url $mp
           rm -rf $mp/source_dir
-          exit 1
 
       - name: Setup upterm session
         if: ${{ failure() }}
