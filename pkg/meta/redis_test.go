@@ -464,6 +464,9 @@ func testMetaClient(t *testing.T, m Meta) {
 	if st := m.SetXattr(ctx, inode, "a", []byte("v3"), XattrCreate); st != syscall.EEXIST {
 		t.Fatalf("setxattr: %s", st)
 	}
+	if st := m.SetXattr(ctx, inode, "a", []byte("v3"), XattrReplace); st != 0 {
+		t.Fatalf("setxattr: %s", st)
+	}
 	if st := m.SetXattr(ctx, inode, "a", []byte("v4"), XattrReplace); st != 0 {
 		t.Fatalf("setxattr: %s", st)
 	}
@@ -1288,6 +1291,9 @@ func testReadOnly(t *testing.T, m Meta) {
 
 	var inode Ino
 	var attr = &Attr{}
+	if st := m.GetAttr(ctx, 1, attr); st != 0 {
+		t.Fatalf("mkdir d: %s", st)
+	}
 	if st := m.Mkdir(ctx, 1, "d", 0640, 022, 0, &inode, attr); st != syscall.EROFS {
 		t.Fatalf("mkdir d: %s", st)
 	}
