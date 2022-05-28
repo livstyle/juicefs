@@ -22,10 +22,10 @@ on:
       bytes:
         description: 'bytes of each file'
         required: true
-        default: 0
+        default: 8192
 jobs:
   mdtest:
-    runs-on: [self-hosted, daily-build, bench-02]
+    runs-on: [self-hosted, daily-build, bench-01]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
