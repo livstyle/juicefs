@@ -10,7 +10,7 @@ on:
       depth:
         description: 'depth of directory'
         required: true
-        default: 10
+        default: 3
       files:
         description: 'number of files for each directory'
         required: true
@@ -57,7 +57,7 @@ jobs:
             sudo ./juicefs destroy --force ${{ steps.vars.outputs.META_URL }} $UUID
           fi
 
-      - name: Fio Benchmark 
+      - name: Test
         run: |
           export PYROSCOPE_AUTH_TOKEN="${{ secrets.PYROSCOPE_AUTH_TOKEN }}"  
           meta_url=${{ steps.vars.outputs.META_URL }}
@@ -74,16 +74,16 @@ jobs:
           ./juicefs mount -d $meta_url ${{ steps.vars.outputs.MOUNT_POINT }} --no-usage-report $pyroscope 
           ./juicefs mdtest $meta_url test --dirs $dirs --depth $depth --files $files --threads $threads --write $bytes
 
-      - name: Clean After
-        if: ${{always()}}
-        run: |
-          if [ -d ${{ steps.vars.outputs.MOUNT_POINT }} ]; then
-            ./juicefs umount ${{ steps.vars.outputs.MOUNT_POINT }} || true
-          fi
-          UUID=$(./juicefs status ${{ steps.vars.outputs.META_URL }} | grep UUID | cut -d '"' -f 4)
-          if [ -n "$UUID" ];then
-            sudo ./juicefs destroy --force ${{ steps.vars.outputs.META_URL }} $UUID
-          fi
+      # - name: Clean After
+      #   if: ${{always()}}
+      #   run: |
+      #     if [ -d ${{ steps.vars.outputs.MOUNT_POINT }} ]; then
+      #       ./juicefs umount ${{ steps.vars.outputs.MOUNT_POINT }} || true
+      #     fi
+      #     UUID=$(./juicefs status ${{ steps.vars.outputs.META_URL }} | grep UUID | cut -d '"' -f 4)
+      #     if [ -n "$UUID" ];then
+      #       sudo ./juicefs destroy --force ${{ steps.vars.outputs.META_URL }} $UUID
+      #     fi
 
       - name: Send Slack Notification
         if: ${{ failure() }}
