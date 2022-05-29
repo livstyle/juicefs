@@ -68,7 +68,7 @@ runs:
 
     - name: Test
       run: |
-        #export PYROSCOPE_AUTH_TOKEN="${{ secrets.PYROSCOPE_AUTH_TOKEN }}"  
+        # export PYROSCOPE_AUTH_TOKEN="${{ secrets.PYROSCOPE_AUTH_TOKEN }}"  
         meta_url=${{inputs.meta_url}}
         minio_url=http://172.27.0.2:9005/mdtest
         dirs=${{inputs.dirs}}
@@ -80,7 +80,7 @@ runs:
         volume=${{inputs.volume_name}}
 
         ./juicefs format --help | grep "trash-days" && trash_day="--trash-days 0" || trash_day=""
-        #./juicefs --help | grep "pyroscope" && pyroscope="--pyroscope http://172.27.0.1:4040" || pyroscope=""
+        # ./juicefs --help | grep "pyroscope" && pyroscope="--pyroscope http://172.27.0.1:4040" || pyroscope=""
         ./juicefs format $trash_day  $meta_url $volume
         ./juicefs mount -d $meta_url $mp --no-usage-report $pyroscope 
         ./juicefs mdtest $meta_url test --dirs $dirs --depth $depth --files $files --threads $threads --write $bytes
