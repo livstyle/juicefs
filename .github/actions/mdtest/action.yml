@@ -1,0 +1,88 @@
+name: 'JuiceFS mdtest action'
+description: 'JuiceFS mdtest action'
+inputs:
+  meta_url:  
+    description: 'meta url'
+    required: true
+    default: ''
+  dirs:
+    description: 'width for each directory'
+    required: true
+    default: 10
+  depth:
+    description: 'depth of all directories'
+    required: true
+    default: 3
+  files:
+    description: 'number of files for each directory'
+    required: true
+    default: 10
+  threads:
+    description: 'number of threads'
+    required: true
+    default: 10
+  bytes:
+    description: 'bytes of each file'
+    required: true
+    default: 8192
+  mount_point:
+    description: 'mount point'
+    required: true
+    default: /tmp/mdtest
+  volume_name:
+    description: 'volume name'
+    required: true
+    default: mdtest
+  
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+          
+    - name: Build linux target
+      run: |
+        #if it is self ruuner
+        hostname | grep bench && export GOPATH=/usr/local/go && export HOME=/root
+        make juicefs 
+        #wget -q https://github.com/juicedata/juicefs/releases/download/v1.0.0-beta3/juicefs-1.0.0-beta3-linux-amd64.tar.gz
+        #tar -xzf juicefs-1.0.0-beta3-linux-amd64.tar.gz
+      shell: bash
+
+    - name: Init
+      run: | 
+        set -x
+        mp=${{inputs.mount_point}}
+        meta_url=${{inputs.meta_url}}
+        volume=${{inputs.volume_name}}
+        test -d $mp && ./juicefs umount -f $mp
+        ./juicefs status $meta_url && UUID=$(./juicefs status $meta_url | grep UUID | cut -d '"' -f 4) || echo "meta not exist"
+        if [ -n "$UUID" ];then
+          ./juicefs destroy --force $meta_url $UUID
+        fi
+        test -d /var/jfs/$volume && rm -rf /var/jfs/$volume || true
+        echo init finished
+      shell: bash
+
+    - name: Test
+      run: |
+        export PYROSCOPE_AUTH_TOKEN="${{ secrets.PYROSCOPE_AUTH_TOKEN }}"  
+        meta_url=${{inputs.meta_url}}
+        minio_url=http://172.27.0.2:9005/mdtest
+        dirs=${{inputs.dirs}}
+        depth=${{inputs.depth}}
+        files=${{inputs.files}}
+        bytes=${{inputs.bytes}}
+        threads=${{inputs.threads}}
+        mp=${{inputs.mount_point}}
+        volume=${{inputs.volume_name}}
+
+        ./juicefs format --help | grep "trash-days" && trash_day="--trash-days 0" || trash_day=""
+        ./juicefs --help | grep "pyroscope" && pyroscope="--pyroscope http://172.27.0.1:4040" || pyroscope=""
+        ./juicefs format $trash_day  $meta_url $volume
+        ./juicefs mount -d $meta_url $mp --no-usage-report $pyroscope 
+        ./juicefs mdtest $meta_url test --dirs $dirs --depth $depth --files $files --threads $threads --write $bytes
+
+      shell: bash
