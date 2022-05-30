@@ -69,6 +69,7 @@ jobs:
           sudo docker restart $container_id
           sleep 3
           $juicefs fsck $meta
+          exit 1
 
       - name: Send Slack Notification
         if: ${{ failure() }}
