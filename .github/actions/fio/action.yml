@@ -41,6 +41,10 @@ inputs:
     description: 'mysql password'
     required: true
     default: ''
+  PYROSCOPE_AUTH_TOKEN:
+    description: 'PYROSCOPE_AUTH_TOKEN'
+    required: true
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -65,7 +69,7 @@ runs:
     - name: Fio Benchmark 
       run: |
         PYROSCOPE_URL=http://172.27.0.1:4040
-        export PYROSCOPE_AUTH_TOKEN="psx-AdbHZAc8gr40Vwn8BXiaNVAfZ4PaU1FFE84qIJbB4Vbk"  
+        export PYROSCOPE_AUTH_TOKEN=${{inputs.PYROSCOPE_AUTH_TOKEN}}
         sudo chmod 777 -R /var/lib/mysql-files/
         csv_file=/var/lib/mysql-files/result.csv
         test -f $csv_file  && rm $csv_file -f
@@ -87,7 +91,7 @@ runs:
         for url in "${urls[@]}"; do
           echo version: $(./$bin_name -V), job: $job,  
           bin_name=$(echo $(basename $url) | sed 's/.tar.gz//g') 
-          juicefs_version=$(./$bin_name -V|cut -b 17-)
+          juicefs_version=$(./$bin_name -V|cut -b 17- | sed 's/:/-/g')
           name=$(echo $job | awk -F: '{print $1}' | xargs)
           fio_arg=$(echo $job | awk -F: '{print $2}' | xargs)
           mount_arg=$(echo $job | awk -F: '{print $3}' | xargs)

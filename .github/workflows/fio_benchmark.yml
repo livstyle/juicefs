@@ -57,6 +57,7 @@ jobs:
           secret_key: minioadmin
           fio_job: "big-file-sequential-read:  --rw=read --refill_buffers --bs=256k --size=${{ github.event.inputs.size }}"
           mysql_password: ${{secrets.MYSQL_PASSWORD}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1    
