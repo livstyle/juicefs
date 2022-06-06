@@ -56,7 +56,10 @@ jobs:
           access_key: minioadmin
           secret_key: minioadmin
           fio_job: "big-file-sequential-read:  --rw=read --refill_buffers --bs=256k --size=${{ github.event.inputs.size }}"
-
+          
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1    
   # big-file-sequential-read:
   #   if: github.repository == 'juicedata/juicefs'
   #   runs-on: [self-hosted, daily-build, bench-01]
