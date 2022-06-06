@@ -62,7 +62,7 @@ runs:
       run: |
         PYROSCOPE_URL=http://172.27.0.1:4040
         export PYROSCOPE_AUTH_TOKEN="psx-AdbHZAc8gr40Vwn8BXiaNVAfZ4PaU1FFE84qIJbB4Vbk"  
-        
+        sudo chmod -R /var/lib/mysql-files/
         csv_file=/var/lib/mysql-files/result.csv
         test -f $csv_file  && rm $csv_file -f
         urls=("juicefs")
@@ -107,6 +107,7 @@ runs:
           elif [[ $bw_str == *GiB* ]]; then
             bw=$(echo "scale=2; $bw*1024.0" | bc -l)
           fi
+          
           echo $name, $bw, $juicefs_version, $size, $nrfiles, ${{ github.ref_name }}, $(date +"%Y-%m-%d %H:%M:%S"), ${{github.sha}}, https://github.com/${{github.repository}}/actions/runs/${{github.run_id}},  redis, minio | tee -a $csv_file
         
           ./$bin_name umount -f ${{ inputs.mount_point }}
