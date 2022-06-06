@@ -78,7 +78,7 @@ runs:
           fi
         done
         mkdir fio || true
-        job=${{inputs.fio_job}}
+        job="${{inputs.fio_job}}"
         for url in "${urls[@]}"; do
           echo version: $(./$bin_name -V), job: $job,  
           bin_name=$(echo $(basename $url) | sed 's/.tar.gz//g') 
