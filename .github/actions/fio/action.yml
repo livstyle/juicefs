@@ -65,7 +65,7 @@ runs:
         csv_file=/var/lib/mysql-files/result.csv
         test -f $csv_file  && rm $csv_file -f
         urls=("juicefs")
-        urls+=($(curl -s https://api.github.com/repos/juicedata/juicefs/releases | grep browser_download_url | grep linux-amd64.tar.gz | awk -F\" '{print $4}' | head -$version_count         
+        urls+=($(curl -s https://api.github.com/repos/juicedata/juicefs/releases | grep browser_download_url | grep linux-amd64.tar.gz | awk -F\" '{print $4}' | head -$version_count)         
         for url in "${urls[@]}"; do
           if [[ $url == http* ]]; then  
             wget -q $url
