@@ -88,6 +88,7 @@ runs:
         done
         mkdir fio || true
         job="${{inputs.fio_job}}"
+        set -x
         for url in "${urls[@]}"; do
           echo version: $(./$bin_name -V), job: $job,  
           bin_name=$(echo $(basename $url) | sed 's/.tar.gz//g') 
@@ -106,7 +107,7 @@ runs:
             sudo sync && echo 3 > /proc/sys/vm/drop_caches
           fi
           echo "start fio"
-          fio --name=$name --directory=${{ inputs.mount_point }} $fio_arg > fio/$name-$juicefs_version.log
+          fio --name=$name --directory=${{ inputs.mount_point }} $fio_arg > "fio/$name-$juicefs_version.log"
           echo "finish fio"
           bw_str=$(tail -1 fio/$name-$juicefs_version.log | awk '{print $2}' | awk -F '=' '{print $2}' )
           bw=$(echo $bw_str | sed 's/.iB.*//g') 
