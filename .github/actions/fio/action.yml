@@ -70,7 +70,11 @@ runs:
           if [[ $url == http* ]]; then  
             wget -q $url
             bin_name=$(echo $(basename $url) | sed 's/.tar.gz//g')
-            mkdir jfs || tar -zxf $(basename $url) -C jfs && mv jfs/juicefs $bin_name
+            mkdir jfs || true
+            tar -zxf $(basename $url) -C jfs
+            mv jfs/juicefs $bin_name
+            rm $(basename $url)
+            rm jfs -rf
           fi
         done
         mkdir fio || true
