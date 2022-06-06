@@ -111,8 +111,9 @@ runs:
           elif [[ $bw_str == *GiB* ]]; then
             bw=$(echo "scale=2; $bw*1024.0" | bc -l)
           fi
-          
-          echo $name, $bw, $juicefs_version, $size, $nrfiles, ${{ github.ref_name }}, $(date +"%Y-%m-%d %H:%M:%S"), ${{github.sha}}, https://github.com/${{github.repository}}/actions/runs/${{github.run_id}},  redis, minio | tee -a $csv_file
+          meta=`echo ${{inputs.meta_url}} | awk -F: '{print $1}'`
+          hostname | grep bench  && runner="self_runner" || runner='github_runner'
+          echo $name, $bw, $juicefs_version, $size, $nrfiles, ${{ github.ref_name }}, $(date +"%Y-%m-%d %H:%M:%S"), ${{github.sha}}, https://github.com/${{github.repository}}/actions/runs/${{github.run_id}},  $meta, ${{inputs.storage}}, $runner | tee -a $csv_file
         
           ./$bin_name umount -f ${{ inputs.mount_point }}
           uuid=$(./juicefs status ${{ inputs.meta_url }} | grep UUID | cut -d '"' -f 4)
@@ -121,7 +122,7 @@ runs:
           fi
           # mc rb  myminio/$name --force --dangerous || printf "Warining; remove bucket failed: %s, exit code: %s" "myminio/$name" "$?"
         done
-        mysql -h 8.210.231.144 -u juicedata -p${{inputs.mysql_password}} -e "use  test_result; LOAD DATA INFILE '/var/lib/mysql-files/result.csv' INTO TABLE fio_test FIELDS TERMINATED BY ',' (name, bandwidth,  juicefs_version, size, nrfiles, ref_name, created_date, github_revision, workflow_url, meta_engine, storage); " 
+        mysql -h 8.210.231.144 -u juicedata -p${{inputs.mysql_password}} -e "use  test_result; LOAD DATA INFILE '/var/lib/mysql-files/result.csv' INTO TABLE fio_test FIELDS TERMINATED BY ',' (name, bandwidth,  juicefs_version, size, nrfiles, ref_name, created_date, github_revision, workflow_url, meta_engine, storage, runner); " 
 
       shell: bash
 
