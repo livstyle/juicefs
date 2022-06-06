@@ -1,0 +1,129 @@
+name: 'Fio Test Action'
+description: 'Fio Test Action'
+inputs:
+  meta_url:  
+    description: 'meta url'
+    required: true
+    default: ''
+  storage:  
+    description: 'storage'
+    required: true
+    default: ''
+  bucket:  
+    description: 'bucket'
+    required: true
+    default: ''
+  access_key:  
+    description: 'access_key'
+    required: true
+    default: ''
+  secret_key:  
+    description: 'secret_key'
+    required: true
+    default: ''
+  volume_name: 
+    description: 'volume name'
+    required: true
+    default: 'fio-test'
+  mount_point: 
+    description: 'mount_point'
+    required: true
+    default: '/tmp/fio-test'
+  fio_job: 
+    description: 'fio job, include name, options and mount args'
+    required: true
+    default: 
+  version_count:
+    description: 'how many version to test besides dev'
+    required: true
+    default: 1
+runs:
+  using: "composite"
+  steps:
+    - name: Install tools
+      run: | 
+        wget -q https://dl.minio.io/client/mc/release/linux-amd64/mc
+        chmod +x mc 
+      shell: bash
+
+    - name: Clean Before
+      run: |
+        rm /var/jfsCache/ -rf || true
+        if [ -d ${{ inputs.mount_point }} ]; then
+          ./juicefs umount ${{ inputs.mount_point }} || true
+        fi
+        uuid=$(./juicefs status ${{ inputs.meta_url }} | grep UUID | cut -d '"' -f 4)
+        if [ -n "$uuid" ];then
+          sudo ./juicefs destroy --force ${{ inputs.meta_url }} $uuid
+        fi
+    - name: Fio Benchmark 
+      run: |
+        PYROSCOPE_URL=http://172.27.0.1:4040
+        export PYROSCOPE_AUTH_TOKEN="psx-AdbHZAc8gr40Vwn8BXiaNVAfZ4PaU1FFE84qIJbB4Vbk"  
+        
+        csv_file=/var/lib/mysql-files/result.csv
+        test -f $csv_file  && rm $csv_file -f
+        urls=("juicefs")
+        urls+=($(curl -s https://api.github.com/repos/juicedata/juicefs/releases | grep browser_download_url | grep linux-amd64.tar.gz | awk -F\" '{print $4}' | head -$version_count         
+        for url in "${urls[@]}"; do
+          if [[ $url == http* ]]; then  
+            wget -q $url
+            bin_name=$(echo $(basename $url) | sed 's/.tar.gz//g')
+            mkdir jfs || tar -zxf $(basename $url) -C jfs && mv jfs/juicefs $bin_name
+          fi
+        done
+        mkdir fio || true
+        job=${{inputs.fio_job}}
+        for url in "${urls[@]}"; do
+          echo version: $(./$bin_name -V), job: $job,  
+          bin_name=$(echo $(basename $url) | sed 's/.tar.gz//g') 
+          juicefs_version=$(./$bin_name -V|cut -b 17-)
+          name=$(echo $job | awk -F: '{print $1}' | xargs)
+          fio_arg=$(echo $job | awk -F: '{print $2}' | xargs)
+          mount_arg=$(echo $job | awk -F: '{print $3}' | xargs)
+          ./$bin_name format --help | grep "trash-days" && trash_day="--trash-days 0" || trash_day=""
+          ./$bin_name --help | grep "pyroscope" && pyroscope="--pyroscope $PYROSCOPE_URL" || pyroscope=""
+          ./$bin_name format $trash_day --storage ${{inputs.storage}} --bucket  ${{inputs.bucket}}  --access-key ${{inputs.access_key}} --secret-key ${{inputs.secret_key}}  ${{inputs.meta_url}} ${{inputs.volume_name}}
+          ./$bin_name mount -d ${{ inputs.meta_url }} ${{ inputs.mount_point }} --no-usage-report $pyroscope  $mount_arg
+          if [[ "$name" =~ ^big-file-rand-read.* ]]; then
+            block_size=$(echo $name | awk -F- '{print $NF}' | xargs)
+            echo block_size is $block_size
+            fio --name=big-file-rand-read-preload --directory=${{ inputs.mount_point }} --rw=randread --refill_buffers --size=${size} --filename=randread.bin --bs=$block_size --pre_read=1
+            sudo sync && echo 3 > /proc/sys/vm/drop_caches
+          fi
+          echo "start fio"
+          fio --name=$name --directory=${{ inputs.mount_point }} $fio_arg > fio/$name-$juicefs_version.log
+          echo "finish fio"
+          bw_str=$(tail -1 fio/$name-$juicefs_version.log | awk '{print $2}' | awk -F '=' '{print $2}' )
+          bw=$(echo $bw_str | sed 's/.iB.*//g') 
+          if [[ $bw_str == *KiB* ]]; then
+            bw=$(echo "scale=2; $bw/1024.0" | bc -l)
+          elif [[ $bw_str == *GiB* ]]; then
+            bw=$(echo "scale=2; $bw*1024.0" | bc -l)
+          fi
+          echo $name, $bw, $juicefs_version, $size, $nrfiles, ${{ github.ref_name }}, $(date +"%Y-%m-%d %H:%M:%S"), ${{github.sha}}, https://github.com/${{github.repository}}/actions/runs/${{github.run_id}},  redis, minio | tee -a $csv_file
+        
+          ./$bin_name umount -f ${{ inputs.mount_point }}
+          uuid=$(./juicefs status ${{ inputs.meta_url }} | grep UUID | cut -d '"' -f 4)
+          if [ -n "$uuid" ];then
+            sudo ./juicefs destroy --force ${{ inputs.meta_url }} $uuid
+          fi
+          # mc rb  myminio/$name --force --dangerous || printf "Warining; remove bucket failed: %s, exit code: %s" "myminio/$name" "$?"
+        done
+        # mysql -h 172.27.0.1 -u root -p${{secrets.MYSQL_PASSWORD}} -e "use  test_result; LOAD DATA INFILE '/var/lib/mysql-files/result.csv' INTO TABLE fio_test FIELDS TERMINATED BY ',' (name, bandwidth,  juicefs_version, size, nrfiles, ref_name, created_date, github_revision, workflow_url, meta_engine, storage); " 
+
+    - name: Save test reuslt
+      if: ${{always()}}
+      uses: actions/upload-artifact@v2
+      with: 
+        name: result.csv
+        path: /var/lib/mysql-files/result.csv
+      shell: bash
+
+    - name: Save fio logs
+      if: ${{always()}}
+      uses: actions/upload-artifact@v2
+      with: 
+        name: fio-logs
+        path: fio/
+      shell: bash
