@@ -62,7 +62,7 @@ runs:
       run: |
         PYROSCOPE_URL=http://172.27.0.1:4040
         export PYROSCOPE_AUTH_TOKEN="psx-AdbHZAc8gr40Vwn8BXiaNVAfZ4PaU1FFE84qIJbB4Vbk"  
-        sudo chmod -R /var/lib/mysql-files/
+        sudo chmod 777 -R /var/lib/mysql-files/
         csv_file=/var/lib/mysql-files/result.csv
         test -f $csv_file  && rm $csv_file -f
         urls=("juicefs")
