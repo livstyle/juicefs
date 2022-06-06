@@ -42,6 +42,7 @@ runs:
   steps:
     - name: Install tools
       run: | 
+        sudo apt install fio
         wget -q https://dl.minio.io/client/mc/release/linux-amd64/mc
         chmod +x mc 
       shell: bash
