@@ -29,7 +29,7 @@ inputs:
     description: 'mount_point'
     required: true
     default: '/tmp/fio-test'
-  fio_jobs: 
+  fio_job: 
     description: 'fio job, include name, options and mount args'
     required: true
     default: 
