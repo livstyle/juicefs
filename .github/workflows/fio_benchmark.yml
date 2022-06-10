@@ -177,7 +177,7 @@ jobs:
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1
 
-  big-file-random-write-4k:
+  big-file-random-write-16k:
     if: github.repository == 'juicedata/juicefs'
     runs-on: [ubuntu-latest]
     steps:
@@ -188,7 +188,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-random-write-4k:    --rw=randwrite --refill_buffers --size=${{ github.event.inputs.size }} --bs=4k"
+          fio_job: "big-file-random-write-16k:    --rw=randwrite --refill_buffers --size=${{ github.event.inputs.size }} --bs=16k"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
