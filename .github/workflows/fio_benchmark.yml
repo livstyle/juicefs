@@ -51,6 +51,36 @@ jobs:
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
+  big-file-multi-read-1:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "big-file-multi-read-1:  --rw=read --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=1"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
+  big-file-multi-read-4:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "big-file-multi-read-4:  --rw=read --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=4"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
   big-file-multi-read-16:
     if: github.repository == 'juicedata/juicefs'
     runs-on: [ubuntu-latest]
@@ -63,6 +93,36 @@ jobs:
         uses: ./.github/actions/fio
         with:
           fio_job: "big-file-multi-read-16:  --rw=read --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=16"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
+  big-file-multi-write-1:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "big-file-multi-write-1:       --rw=write --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=1"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
+  big-file-multi-write-4:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "big-file-multi-write-4:       --rw=write --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=4"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -81,6 +141,24 @@ jobs:
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
+  big-file-rand-read-4k:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "big-file-rand-read-4k:       --rw=randread --refill_buffers --size=${{ github.event.inputs.size }} --filename=randread.bin --bs=4k" 
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1
+        
   big-file-rand-read-256k:
     if: github.repository == 'juicedata/juicefs'
     runs-on: [ubuntu-latest]
@@ -98,6 +176,22 @@ jobs:
       - name: Setup upterm session
         if: ${{ failure() }}
         uses: lhotari/action-upterm@v1
+
+  big-file-random-write-4k:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "big-file-random-write-4k:    --rw=randwrite --refill_buffers --size=${{ github.event.inputs.size }} --bs=4k"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
   big-file-random-write-256k:
     if: github.repository == 'juicedata/juicefs'
     runs-on: [ubuntu-latest]
@@ -110,6 +204,21 @@ jobs:
         uses: ./.github/actions/fio
         with:
           fio_job: "big-file-random-write-256k:    --rw=randwrite --refill_buffers --size=${{ github.event.inputs.size }} --bs=256k"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
+  small-file-seq-read-4k:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "small-file-seq-read-4k:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} :--cache-size=0"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -128,6 +237,21 @@ jobs:
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
+  small-file-seq-write-4k:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "small-file-seq-write-4k:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} :--writeback"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
   small-file-seq-write-256k:
     if: github.repository == 'juicedata/juicefs'
     runs-on: [ubuntu-latest]
@@ -143,6 +267,36 @@ jobs:
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
+  small-file-multi-read-1:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "small-file-multi-read-1:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=1"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
+  small-file-multi-read-4:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "small-file-multi-read-4:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=4"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
   small-file-multi-read-16:
     if: github.repository == 'juicedata/juicefs'
     runs-on: [ubuntu-latest]
@@ -155,6 +309,36 @@ jobs:
         uses: ./.github/actions/fio
         with:
           fio_job: "small-file-multi-read-16:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=16"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
+  small-file-multi-write-1:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "small-file-multi-write-1:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=1"
+          mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
+          PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
+
+  small-file-multi-write-4:
+    if: github.repository == 'juicedata/juicefs'
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Test 
+        uses: ./.github/actions/fio
+        with:
+          fio_job: "small-file-multi-write-4:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=4"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
