@@ -65,7 +65,8 @@ runs:
     - name: Build linux target
       run: |
         make juicefs
-        
+      shell: bash
+
     - name: Clean Before
       run: |
         rm /var/jfsCache/ -rf || true
