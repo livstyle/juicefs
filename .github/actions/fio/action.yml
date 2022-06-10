@@ -82,8 +82,7 @@ runs:
       run: |
         PYROSCOPE_URL=http://172.27.0.1:4040
         export PYROSCOPE_AUTH_TOKEN=${{inputs.PYROSCOPE_AUTH_TOKEN}}
-        sudo chmod 777 -R /var/lib/mysql-files/
-        csv_file=/var/lib/mysql-files/result.csv
+        csv_file=/tmp/result.csv
         test -f $csv_file  && rm $csv_file -f
         urls=("juicefs")
         urls+=($(curl -s https://api.github.com/repos/juicedata/juicefs/releases | grep browser_download_url | grep linux-amd64.tar.gz | awk -F\" '{print $4}' | head -${{inputs.version_count}}))         
@@ -98,7 +97,7 @@ runs:
             rm jfs -rf
           fi
         done
-        mkdir fio || true
+        mkdir fio-log || true
         job="${{inputs.fio_job}}"
         set -x
         for url in "${urls[@]}"; do
@@ -119,9 +118,9 @@ runs:
             sudo sync && echo 3 > /proc/sys/vm/drop_caches
           fi
           echo "start fio"
-          fio --name=$name --directory=${{ inputs.mount_point }} $fio_arg > "fio/$name-$juicefs_version.log"
+          fio --name=$name --directory=${{ inputs.mount_point }} $fio_arg > "fio-log/$name-$juicefs_version.log"
           echo "finish fio"
-          bw_str=$(tail -1 fio/$name-$juicefs_version.log | awk '{print $2}' | awk -F '=' '{print $2}' )
+          bw_str=$(tail -1 fio-log/$name-$juicefs_version.log | awk '{print $2}' | awk -F '=' '{print $2}' )
           bw=$(echo $bw_str | sed 's/.iB.*//g') 
           if [[ $bw_str == *KiB* ]]; then
             bw=$(echo "scale=2; $bw/1024.0" | bc -l)
@@ -148,11 +147,11 @@ runs:
       uses: actions/upload-artifact@v2
       with: 
         name: result.csv
-        path: /var/lib/mysql-files/result.csv
+        path: /tmp/result.csv
 
     - name: Save fio logs
       if: ${{always()}}
       uses: actions/upload-artifact@v2
       with: 
         name: fio-logs
-        path: fio/
+        path: fio-logs/
