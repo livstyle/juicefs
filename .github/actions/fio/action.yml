@@ -4,23 +4,23 @@ inputs:
   meta_url:  
     description: 'meta url'
     required: true
-    default: ''
+    default: 'redis://localhost/1'
   storage:  
     description: 'storage'
     required: true
-    default: ''
+    default: 'minio'
   bucket:  
     description: 'bucket'
     required: true
-    default: ''
+    default: 'http://localhost:9000/fio-test'
   access_key:  
     description: 'access_key'
     required: true
-    default: ''
+    default: 'minioadmin'
   secret_key:  
     description: 'secret_key'
     required: true
-    default: ''
+    default: 'minioadmin'
   volume_name: 
     description: 'volume name'
     required: true
