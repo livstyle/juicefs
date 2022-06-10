@@ -124,7 +124,7 @@ runs:
             block_size=$(echo $name | awk -F- '{print $NF}' | xargs)
             echo block_size is $block_size
             fio --name=big-file-rand-read-preload --directory=${{ inputs.mount_point }} --rw=randread --refill_buffers --size=${{inputs.size}} --filename=randread.bin --bs=$block_size --pre_read=1
-            sudo sync && echo 3 > /proc/sys/vm/drop_caches
+            sudo sync && sudo echo 3 > /proc/sys/vm/drop_caches
           fi
           echo "start fio"
           fio --name=$name --directory=${{ inputs.mount_point }} $fio_arg > "fio-log/$name-$juicefs_version.log"
