@@ -10,7 +10,7 @@ on:
       - release-**
   schedule:
     - cron:  '*/1 20 * * *'
-    inputs:
+    - inputs:
       size:
         description: 'file size to read/write by fio'
         required: true
