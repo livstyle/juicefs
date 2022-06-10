@@ -10,26 +10,8 @@ on:
       - release-**
   schedule:
     - cron:  '*/1 20 * * *'
-    - inputs:
-      size:
-        description: 'file size to read/write by fio'
-        required: true
-        default: '1G'
-      nrfiles:
-        description: 'number of files to read/write by fio'
-        required: true
-        default: 10000
-    
   workflow_dispatch:
-    inputs:
-      size:
-        description: 'file size to read/write by fio'
-        required: true
-        default: '1G'
-      nrfiles:
-        description: 'number of files to read/write by fio'
-        required: true
-        default: 10000
+
 jobs:
   big-file-sequential-read:
     if: github.repository == 'juicedata/juicefs'
@@ -42,7 +24,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-sequential-read:  --rw=read --refill_buffers --bs=256k --size=${{ github.event.inputs.size }}"
+          fio_job: "big-file-sequential-read:  --rw=read --refill_buffers --bs=256k --size=1G"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -57,7 +39,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-sequential-write:  --rw=write --refill_buffers --bs=256k  --size=${{ github.event.inputs.size }}"
+          fio_job: "big-file-sequential-write:  --rw=write --refill_buffers --bs=256k  --size=1G"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -72,7 +54,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-multi-read-1:  --rw=read --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=1"
+          fio_job: "big-file-multi-read-1:  --rw=read --refill_buffers --bs=256k --size=1G --numjobs=1"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -87,7 +69,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-multi-read-4:  --rw=read --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=4"
+          fio_job: "big-file-multi-read-4:  --rw=read --refill_buffers --bs=256k --size=1G --numjobs=4"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -102,7 +84,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-multi-read-16:  --rw=read --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=16"
+          fio_job: "big-file-multi-read-16:  --rw=read --refill_buffers --bs=256k --size=1G --numjobs=16"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -117,7 +99,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-multi-write-1:       --rw=write --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=1"
+          fio_job: "big-file-multi-write-1:       --rw=write --refill_buffers --bs=256k --size=1G --numjobs=1"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -132,7 +114,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-multi-write-4:       --rw=write --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=4"
+          fio_job: "big-file-multi-write-4:       --rw=write --refill_buffers --bs=256k --size=1G --numjobs=4"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -147,7 +129,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-multi-write-16:       --rw=write --refill_buffers --bs=256k --size=${{ github.event.inputs.size }} --numjobs=16"
+          fio_job: "big-file-multi-write-16:       --rw=write --refill_buffers --bs=256k --size=1G --numjobs=16"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -162,7 +144,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-rand-read-4k:       --rw=randread --refill_buffers --size=${{ github.event.inputs.size }} --filename=randread.bin --bs=4k" 
+          fio_job: "big-file-rand-read-4k:       --rw=randread --refill_buffers --size=1G --filename=randread.bin --bs=4k" 
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
       - name: Setup upterm session
@@ -180,7 +162,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-rand-read-256k:       --rw=randread --refill_buffers --size=${{ github.event.inputs.size }} --filename=randread.bin --bs=256k" 
+          fio_job: "big-file-rand-read-256k:       --rw=randread --refill_buffers --size=1G --filename=randread.bin --bs=256k" 
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
       - name: Setup upterm session
@@ -198,7 +180,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-random-write-16k:    --rw=randwrite --refill_buffers --size=${{ github.event.inputs.size }} --bs=16k"
+          fio_job: "big-file-random-write-16k:    --rw=randwrite --refill_buffers --size=1G --bs=16k"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -213,7 +195,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "big-file-random-write-256k:    --rw=randwrite --refill_buffers --size=${{ github.event.inputs.size }} --bs=256k"
+          fio_job: "big-file-random-write-256k:    --rw=randwrite --refill_buffers --size=1G --bs=256k"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -228,7 +210,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-seq-read-4k:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} :--cache-size=0"
+          fio_job: "small-file-seq-read-4k:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=10000 :--cache-size=0"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -243,7 +225,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-seq-read-256k:      --rw=read --file_service_type=sequential --bs=256k --filesize=256k --nrfiles=${{ github.event.inputs.nrfiles }} :--cache-size=0"
+          fio_job: "small-file-seq-read-256k:      --rw=read --file_service_type=sequential --bs=256k --filesize=256k --nrfiles=10000 :--cache-size=0"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -258,7 +240,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-seq-write-4k:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} :--writeback"
+          fio_job: "small-file-seq-write-4k:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=10000 :--writeback"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -273,7 +255,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-seq-write-256k:     --rw=write --file_service_type=sequential --bs=256k --filesize=256k --nrfiles=${{ github.event.inputs.nrfiles }} :--writeback"
+          fio_job: "small-file-seq-write-256k:     --rw=write --file_service_type=sequential --bs=256k --filesize=256k --nrfiles=10000 :--writeback"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -288,7 +270,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-multi-read-1:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=1"
+          fio_job: "small-file-multi-read-1:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=10000 --numjobs=1"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -303,7 +285,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-multi-read-4:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=4"
+          fio_job: "small-file-multi-read-4:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=10000 --numjobs=4"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -318,7 +300,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-multi-read-16:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=16"
+          fio_job: "small-file-multi-read-16:      --rw=read --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=10000 --numjobs=16"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -333,7 +315,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-multi-write-1:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=1"
+          fio_job: "small-file-multi-write-1:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=10000 --numjobs=1"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -348,7 +330,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-multi-write-4:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=4"
+          fio_job: "small-file-multi-write-4:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=10000 --numjobs=4"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 
@@ -363,7 +345,7 @@ jobs:
       - name: Test 
         uses: ./.github/actions/fio
         with:
-          fio_job: "small-file-multi-write-16:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=${{ github.event.inputs.nrfiles }} --numjobs=16"
+          fio_job: "small-file-multi-write-16:     --rw=write --file_service_type=sequential --bs=4k --filesize=4k --nrfiles=10000 --numjobs=16"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
 

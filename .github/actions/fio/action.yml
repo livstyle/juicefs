@@ -45,14 +45,7 @@ inputs:
     description: 'PYROSCOPE_AUTH_TOKEN'
     required: true
     default: ''
-  size: 
-    description: 'data size'
-    required: true
-    default: '1G'
-  nrfiles: 
-    description: 'number of files'
-    required: true
-    default: '10000'
+
 runs:
   using: "composite"
   steps:
@@ -91,8 +84,6 @@ runs:
       run: |
         PYROSCOPE_URL=http://172.27.0.1:4040
         export PYROSCOPE_AUTH_TOKEN=${{inputs.PYROSCOPE_AUTH_TOKEN}}
-        csv_file=/tmp/result.csv
-        test -f $csv_file  && rm $csv_file -f
         urls=("juicefs")
         urls+=($(curl -s https://api.github.com/repos/juicedata/juicefs/releases | grep browser_download_url | grep linux-amd64.tar.gz | awk -F\" '{print $4}' | head -${{inputs.version_count}}))         
         for url in "${urls[@]}"; do
@@ -106,7 +97,6 @@ runs:
             rm jfs -rf
           fi
         done
-        mkdir fio-log || true
         job="${{inputs.fio_job}}"
         set -x
         for url in "${urls[@]}"; do
@@ -123,14 +113,14 @@ runs:
           if [[ "$name" =~ ^big-file-rand-read.* ]]; then
             block_size=$(echo $name | awk -F- '{print $NF}' | xargs)
             echo block_size is $block_size
-            fio --name=big-file-rand-read-preload --directory=${{ inputs.mount_point }} --rw=randread --refill_buffers --size=${{inputs.size}} --filename=randread.bin --bs=$block_size --pre_read=1
+            fio --name=big-file-rand-read-preload --directory=${{ inputs.mount_point }} --rw=randread --refill_buffers --size=1G --filename=randread.bin --bs=$block_size --pre_read=1
             sudo sync 
             sudo bash -c  "echo 3 > /proc/sys/vm/drop_caches"
           fi
           echo "start fio"
-          fio --name=$name --directory=${{ inputs.mount_point }} $fio_arg > "fio-log/$name-$juicefs_version.log"
+          fio --name=$name --directory=${{ inputs.mount_point }} $fio_arg > "$name-$juicefs_version.log"
           echo "finish fio"
-          bw_str=$(tail -1 fio-log/$name-$juicefs_version.log | awk '{print $2}' | awk -F '=' '{print $2}' )
+          bw_str=$(tail -1 $name-$juicefs_version.log | awk '{print $2}' | awk -F '=' '{print $2}' )
           bw=$(echo $bw_str | sed 's/.iB.*//g') 
           if [[ $bw_str == *KiB* ]]; then
             bw=$(echo "scale=2; $bw/1024.0" | bc -l)
@@ -139,8 +129,7 @@ runs:
           fi
           meta=`echo ${{inputs.meta_url}} | awk -F: '{print $1}'`
           hostname | grep bench  && runner="self_runner" || runner='github_runner'
-          echo $name, $bw, $juicefs_version, $size, $nrfiles, ${{ github.ref_name }}, $(date +"%Y-%m-%d %H:%M:%S"), ${{github.sha}}, https://github.com/${{github.repository}}/actions/runs/${{github.run_id}},  $meta, ${{inputs.storage}}, $runner | tee -a $csv_file
-          mysql -h 8.210.231.144 -u juicedata -p${{inputs.mysql_password}} -e "use  test_result;  INSERT INTO fio_test (name, bandwidth,  juicefs_version, size, nrfiles, ref_name, created_date, github_revision, workflow_url, meta_engine, storage, runner) values ('$name', $bw, '$juicefs_version', '${{inputs.size}}', ${{inputs.nrfiles}}, '${{ github.ref_name }}', '$(date +"%Y-%m-%d %H:%M:%S")', '${{github.sha}}', 'https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}',  '$meta', '${{inputs.storage}}', '$runner'); "
+          mysql -h 8.210.231.144 -u juicedata -p${{inputs.mysql_password}} -e "use  test_result;  INSERT INTO fio_test (name, bandwidth,  juicefs_version, size, nrfiles, ref_name, created_date, github_revision, workflow_url, meta_engine, storage, runner) values ('$name', $bw, '$juicefs_version', '1G', 10000, '${{ github.ref_name }}', '$(date +"%Y-%m-%d %H:%M:%S")', '${{github.sha}}', 'https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}',  '$meta', '${{inputs.storage}}', '$runner'); "
           ./$bin_name umount -f ${{ inputs.mount_point }}
           uuid=$(./juicefs status ${{ inputs.meta_url }} | grep UUID | cut -d '"' -f 4)
           if [ -n "$uuid" ];then
@@ -152,16 +141,3 @@ runs:
 
       shell: bash
 
-    - name: Save test reuslt
-      if: ${{always()}}
-      uses: actions/upload-artifact@v2
-      with: 
-        name: result.csv
-        path: /tmp/result.csv
-
-    - name: Save fio logs
-      if: ${{always()}}
-      uses: actions/upload-artifact@v2
-      with: 
-        name: fio-logs
-        path: fio-logs/
