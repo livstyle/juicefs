@@ -53,7 +53,7 @@ jobs:
           bucket: http://localhost:9000/fio-test
           access_key: minioadmin
           secret_key: minioadmin
-          fio_jobs: "big-file-sequential-read:  --rw=read --refill_buffers --bs=512k --size=${{ github.event.inputs.size }}"
+          fio_job: "big-file-sequential-read:  --rw=read --refill_buffers --bs=512k --size=${{ github.event.inputs.size }}"
           mysql_password: ${{secrets.MYSQL_PASSWORD_FOR_JUICEDATA}}
           PYROSCOPE_AUTH_TOKEN: ${{secrets.PYROSCOPE_AUTH_TOKEN}}
       - name: Setup upterm session
