@@ -123,7 +123,7 @@ runs:
           if [[ "$name" =~ ^big-file-rand-read.* ]]; then
             block_size=$(echo $name | awk -F- '{print $NF}' | xargs)
             echo block_size is $block_size
-            fio --name=big-file-rand-read-preload --directory=${{ inputs.mount_point }} --rw=randread --refill_buffers --size=${size} --filename=randread.bin --bs=$block_size --pre_read=1
+            fio --name=big-file-rand-read-preload --directory=${{ inputs.mount_point }} --rw=randread --refill_buffers --size=${inputs.size} --filename=randread.bin --bs=$block_size --pre_read=1
             sudo sync && echo 3 > /proc/sys/vm/drop_caches
           fi
           echo "start fio"
